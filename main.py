@@ -71,7 +71,7 @@ def find_max_matching_sequences(text1, text2, min_words=5):
 
 def main():
     st.title("🔍 Plagiats-Checker")
-    st.write("Überprüfen Sie Text auf mögliche nicht-zitierte Übernahmen aus Webseiten.")
+    st.write("Überprüfen Sie Texte auf unbeabsichtigte Plagiate.")
     
     # URL-Eingabefelder
     st.subheader("Quell-URLs eingeben")
