@@ -39,20 +39,35 @@ def extract_with_trafilatura(url):
     except:
         return None
 
-def find_matching_sequences(text1, text2, min_words=5):
-    """Findet übereinstimmende Sequenzen mit mindestens min_words Wörtern"""
+def find_max_matching_sequences(text1, text2, min_words=5):
+    """Findet die maximalen, nicht-überlappenden Sequenzen"""
     words1 = text1.split()
-    words2 = text2.split()
-    matches = {}
+    found_matches = {}  # Speichert Start-Index -> (Länge, Text)
     
-    for i in range(len(words1) - min_words + 1):
-        for j in range(min_words, len(words1) - i + 1):
-            sequence = ' '.join(words1[i:i+j])
-            if sequence in text2 and len(sequence.split()) >= min_words:
-                matches[sequence] = sequence
+    # Finde alle möglichen Matches
+    i = 0
+    while i < len(words1):
+        max_match_at_pos = None
+        max_length_at_pos = 0
+        
+        # Suche das längste Match an dieser Position
+        for length in range(min_words, len(words1) - i + 1):
+            sequence = ' '.join(words1[i:i + length])
+            if sequence in text2:
+                max_match_at_pos = sequence
+                max_length_at_pos = length
+            else:
+                # Wenn keine längere Sequenz gefunden wurde, brechen wir ab
                 break
-    
-    return matches
+                
+        if max_match_at_pos:
+            found_matches[i] = (max_length_at_pos, max_match_at_pos)
+            i += max_length_at_pos  # Überspringe die gematchten Wörter
+        else:
+            i += 1
+            
+    # Extrahiere nur die Matches
+    return [match for _, (_, match) in found_matches.items()]
 
 def main():
     st.title("🔍 Plagiats-Checker")
@@ -76,7 +91,7 @@ def main():
             cleaned_user_text = clean_text(user_text)
             
             # Dictionary für gefundene Übereinstimmungen
-            matches = {}
+            all_matches = {}  # URL -> [matches]
             
             # Überprüfe jede URL
             for url in urls:
@@ -96,25 +111,26 @@ def main():
                     cleaned_content = clean_text(content)
                     
                     # Finde Übereinstimmungen
-                    url_matches = find_matching_sequences(cleaned_user_text, cleaned_content)
-                    
-                    # Füge URL zu den Matches hinzu
-                    for match in url_matches.keys():
-                        matches[match] = url
+                    matches = find_max_matching_sequences(cleaned_user_text, cleaned_content)
+                    if matches:
+                        all_matches[url] = matches
                         
                 progress_text.empty()
             
             # Zeige Ergebnisse
             st.subheader("Gefundene Übereinstimmungen:")
             
-            if matches:
-                for text, source_url in matches.items():
-                    st.markdown(f"""
-                    ---
-                    **Stelle im User-Text:** "{text}"
-                    
-                    **Quelle:** [{urlparse(source_url).netloc}]({source_url})
-                    """)
+            if all_matches:
+                for url, matches in all_matches.items():
+                    st.markdown(f"### Quelle: [{urlparse(url).netloc}]({url})")
+                    for match in matches:
+                        st.markdown(f"""
+                        **Gefundene Textpassage** ({len(match.split())} Wörter):
+                        ```
+                        {match}
+                        ```
+                        """)
+                    st.markdown("---")
             else:
                 st.success("Keine verdächtigen Übereinstimmungen gefunden!")
 
