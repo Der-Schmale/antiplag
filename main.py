@@ -13,19 +13,23 @@ def clean_text(text):
     # Debug-Ausgabe des Originaltexts
     st.write("Original:", text[:200])
     
-    # 1. Entferne Zwischenüberschriften und Navigation
-    text = re.sub(r'([.!?])\s*[A-Z][^.!?]*[:?]\s*', r'\1 ', text)  # Entfernt Zwischenüberschriften
-    
-    # 2. Entferne Navigation und Metadaten
-    nav_terms = [
-        "Home", "News", "Panorama", "Kriminalität", "Schlagzeilen", 
-        "Alle", "Zurück", "Artikel teilen mit", "ZurückArtikel",
-        "Lesen Sie mehr", "zum Thema"
+    # 1. Entferne häufige Navigations- und Metadatenelemente
+    nav_patterns = [
+        r'Home\s*News',
+        r'Schlagzeilen\s*Alle',
+        r'Artikel teilen mit',
+        r'Lesen Sie mehr',
+        r'zum Thema',
+        r'(?:Panorama|Kriminalität)',
+        r'\d{2}\.\d{2}\.\d{4}',  # Datumsmuster
+        r'\d{2}:\d{2}\s+Uhr',    # Uhrzeitmuster
+        r'[A-Z][a-z]+:\s*[A-Z]'  # Typische Nachrichtenüberschriften
     ]
-    for term in nav_terms:
-        text = text.replace(term, "")
     
-    # 3. Entferne Zitate
+    for pattern in nav_patterns:
+        text = re.sub(pattern, '', text)
+    
+    # 2. Entferne Zitate
     quotes_patterns = [
         r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',
         r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',
@@ -36,19 +40,17 @@ def clean_text(text):
     for pattern in quotes_patterns:
         text = re.sub(pattern, '', text)
     
-    # 4. Normalisiere Satzzeichen und Whitespace
-    text = text.replace('–', '-')                  # Normalisiere Bindestriche
-    text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)  # Füge Leerzeichen nach Satzzeichen ein
-    text = re.sub(r'[,:]', ' ', text)             # Ersetze Kommas und Doppelpunkte durch Leerzeichen
-    text = re.sub(r'\s+', ' ', text)              # Normalisiere Whitespace
+    # 3. Entferne doppelte Textpassagen
+    text = re.sub(r'(.{50,}?)\1+', r'\1', text)  # Entfernt längere wiederholte Passagen
     
-    # 5. Entferne doppelte Sätze
-    sentences = text.split('. ')
-    unique_sentences = []
-    for sentence in sentences:
-        if sentence not in unique_sentences:
-            unique_sentences.append(sentence)
-    text = '. '.join(unique_sentences)
+    # 4. Normalisiere Satzzeichen und Whitespace
+    text = text.replace('–', '-')
+    text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)  # Füge Leerzeichen nach Satzzeichen ein
+    text = re.sub(r'[,:]', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
+    
+    # 5. Entferne kurze Schlagzeilen am Ende
+    text = re.sub(r'(?:[A-Z][^.!?]{10,50}(?:[.!?]|\s|$))+$', '', text)
     
     text = text.strip()
     
