@@ -144,14 +144,13 @@ def main():
     
     # Layout für jede Quelle
     for i in range(4):
-        # Container für URL und Button
-        container = st.container()
-        col1, col2 = container.columns([4, 1])
+        col1, col2 = st.columns([5, 1])
         
+        # URL und Button nebeneinander in den Columns
         with col1:
             url = st.text_input(f"URL {i+1}", key=f"url_{i}")
         with col2:
-            if st.button("Einlesen", key=f"scrape_{i}", help="Text von der URL einlesen") and url:
+            if st.button("Einlesen", key=f"scrape_{i}", help="Text von der URL einlesen", use_container_width=True) and url:
                 content = extract_with_requests(url)
                 if not content:
                     content = extract_with_trafilatura(url)
