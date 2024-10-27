@@ -6,14 +6,17 @@ import re
 from urllib.parse import urlparse
 
 def clean_text(text):
-    """Entfernt Zitate (Text in Anführungszeichen) und bereinigt den Text"""
+    """Entfernt Zitate und bereinigt den Text gründlicher"""
     if not text:
         return ""
     
-    # Debugausgabe vor der Bereinigung
+    # Debug-Ausgabe des Originaltexts
     st.write("Original:", text[:200])
     
-    # Entferne Zitate mit verschiedenen Anführungszeichen
+    # 1. Entferne erst HTML und Navigation-ähnliche Elemente
+    text = re.sub(r'(?:Home|News|Panorama|Kriminalität|Schlagzeilen|Alle|Zurück|Artikel\steilen\smit:).*?(?=\s|$)', '', text)
+    
+    # 2. Entferne Zitate mit verschiedenen Anführungszeichen
     patterns = [
         r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',
         r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',
@@ -23,12 +26,17 @@ def clean_text(text):
     ]
     
     for pattern in patterns:
-        text = re.sub(pattern, ' ', text)
+        text = re.sub(pattern, '', text)
     
-    # Normalisiere Whitespace vorsichtiger
-    text = ' '.join(word for word in text.split() if word)
+    # 3. Bereinige übrige Satzzeichen und normalisiere Whitespace
+    text = re.sub(r'[,:](?=\s|$)', '', text)  # Entferne Kommas und Doppelpunkte am Wortende
+    text = re.sub(r'\s+', ' ', text)  # Normalisiere Whitespace
+    text = text.strip()
     
-    # Debugausgabe nach der Bereinigung
+    # 4. Entferne leere Klammern und deren Inhalt
+    text = re.sub(r'\([^)]*\)', '', text)
+    
+    # Debug-Ausgabe des bereinigten Texts
     st.write("Bereinigt:", text[:200])
     
     return text
@@ -40,7 +48,12 @@ def extract_with_requests(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        for element in soup(['script', 'style', 'nav', 'header', 'footer']):
+        # Entferne mehr unwichtige Elemente
+        for element in soup(['script', 'style', 'nav', 'header', 'footer', 'meta', 'link']):
+            element.decompose()
+            
+        # Entferne Navigation und Metadaten
+        for element in soup.find_all(['nav', 'header', 'footer']):
             element.decompose()
             
         return ' '.join(soup.get_text().split())
