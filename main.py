@@ -127,11 +127,17 @@ def main():
     st.title("🔍 Plagiats-Checker")
     st.write("Überprüfen Sie Text auf mögliche nicht-zitierte Übernahmen aus Webseiten.")
     
-    # CSS für vertikale Ausrichtung
+    # Flexbox CSS für zuverlässige vertikale Ausrichtung
     st.markdown("""
         <style>
+        div.row-widget.stButton {
+            display: flex;
+            align-items: center;
+            min-height: 38px;  /* Standardhöhe der Streamlit-Eingabefelder */
+        }
         .stButton > button {
-            margin-top: 24px;
+            margin: 0;
+            height: 38px;
         }
         </style>
     """, unsafe_allow_html=True)
