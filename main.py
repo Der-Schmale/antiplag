@@ -13,8 +13,13 @@ def clean_text(text):
     # Debug-Ausgabe des Originaltexts
     st.write("Original:", text[:200])
     
-    # 1. Entferne Navigation und Metadaten am Anfang/Ende
-    text = re.sub(r'^(?:Home|News|Panorama|Kriminalität|Schlagzeilen|Alle|Zurück|Artikel\steilen\smit:).*?\n', '', text)
+    # 1. Entferne Navigation und Metadaten
+    nav_terms = [
+        "Home", "News", "Panorama", "Kriminalität", "Schlagzeilen", 
+        "Alle", "Zurück", "Artikel teilen mit", "ZurückArtikel"
+    ]
+    for term in nav_terms:
+        text = text.replace(term, "")
     
     # 2. Entferne Zitate
     quotes_patterns = [
@@ -27,9 +32,10 @@ def clean_text(text):
     for pattern in quotes_patterns:
         text = re.sub(pattern, '', text)
     
-    # 3. Normalisiere nur grundlegende Sachen
-    text = text.replace('–', '-')
-    text = re.sub(r'\s+', ' ', text)
+    # 3. Bereinige Satzzeichen und normalisiere Text
+    text = text.replace('–', '-')                  # Normalisiere Bindestriche
+    text = re.sub(r'[,:]', ' ', text)             # Ersetze Kommas und Doppelpunkte durch Leerzeichen
+    text = re.sub(r'\s+', ' ', text)              # Normalisiere Whitespace
     text = text.strip()
     
     # Debug-Ausgabe des bereinigten Texts
@@ -66,7 +72,7 @@ def extract_with_trafilatura(url):
         return None
 
 def find_max_matching_sequences(text1, text2, min_words=5):
-    """Findet die maximalen, nicht-überlappenden Sequenzen"""
+    """Findet alle relevanten übereinstimmenden Sequenzen"""
     if not text1 or not text2:
         return []
     
@@ -75,32 +81,35 @@ def find_max_matching_sequences(text1, text2, min_words=5):
     st.write("Text2 (Quelle) Anfang:", text2[:200])
     
     words1 = text1.split()
-    words2 = text2.split()
-    found_matches = {}
+    matches = []
+    used_positions = set()
     
     i = 0
     while i < len(words1):
-        max_match_at_pos = None
-        max_length_at_pos = 0
-        
-        # Suche nach der längstmöglichen Übereinstimmung
-        current_sequence = []
-        for j in range(i, len(words1)):
-            current_sequence.append(words1[j])
-            current_text = ' '.join(current_sequence)
+        if i in used_positions:
+            i += 1
+            continue
             
-            # Prüfe ob die aktuelle Sequenz im Quelltext vorkommt
-            if current_text in text2 and len(current_sequence) >= min_words:
-                max_match_at_pos = current_text
-                max_length_at_pos = len(current_sequence)
+        # Suche die längste Übereinstimmung an dieser Position
+        best_match = None
+        best_length = 0
         
-        if max_match_at_pos:
-            found_matches[i] = (max_length_at_pos, max_match_at_pos)
-            i += max_length_at_pos
+        for length in range(min_words, min(30, len(words1) - i + 1)):
+            sequence = ' '.join(words1[i:i+length])
+            if sequence in text2:
+                best_match = sequence
+                best_length = length
+        
+        if best_match:
+            matches.append(best_match)
+            # Markiere verwendete Positionen
+            for pos in range(i, i + best_length):
+                used_positions.add(pos)
+            i += best_length
         else:
             i += 1
-            
-    return [match for _, (_, match) in found_matches.items()]
+    
+    return matches
 
 def main():
     st.title("🔍 Plagiats-Checker")
