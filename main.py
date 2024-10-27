@@ -146,9 +146,7 @@ def main():
                         
                     for match in matches:
                         st.markdown(f"**Gefundene Textpassage** ({len(match)} Zeichen):")
-                        st.markdown(f"""<div class="match-text">
-{match}
-</div>""", unsafe_allow_html=True)
+                        st.markdown(f'<div class="match-text">{match}</div>', unsafe_allow_html=True)
                     st.markdown("---")
             else:
                 st.success("Keine verdächtigen Übereinstimmungen gefunden!")
