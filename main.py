@@ -9,21 +9,28 @@ def clean_text(text):
     """Entfernt Zitate (Text in Anführungszeichen) und bereinigt den Text"""
     if not text:
         return ""
-        
-    # Entferne alle Arten von Anführungszeichen und deren Inhalt
+    
+    # Debugausgabe vor der Bereinigung
+    st.write("Original:", text[:200])
+    
+    # Entferne Zitate mit verschiedenen Anführungszeichen
     patterns = [
-        r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',  # ", ", ", „
-        r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',    # ', ', ‚, ‛
-        r"'.*?'",                                                        # einfache Anführungszeichen
-        r"».*?«",                                                        # französische Anführungszeichen
-        r"›.*?‹"                                                         # einfache französische
+        r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',
+        r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',
+        r"'.*?'",
+        r"».*?«",
+        r"›.*?‹"
     ]
     
     for pattern in patterns:
-        text = re.sub(pattern, '', text)
+        text = re.sub(pattern, ' ', text)
     
-    # Normalisiere Whitespace
-    text = ' '.join(text.split())
+    # Normalisiere Whitespace vorsichtiger
+    text = ' '.join(word for word in text.split() if word)
+    
+    # Debugausgabe nach der Bereinigung
+    st.write("Bereinigt:", text[:200])
+    
     return text
 
 def extract_with_requests(url):
@@ -53,6 +60,10 @@ def find_max_matching_sequences(text1, text2, min_words=5):
     """Findet die maximalen, nicht-überlappenden Sequenzen"""
     if not text1 or not text2:
         return []
+    
+    # Debug: Zeige die ersten 200 Zeichen beider Texte
+    st.write("Text1 (User) Anfang:", text1[:200])
+    st.write("Text2 (Quelle) Anfang:", text2[:200])
     
     words1 = text1.split()
     found_matches = {}
