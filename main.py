@@ -181,12 +181,11 @@ def main():
                         st.markdown(f"### Quelle: {source}")
                         
                     for match in matches:
-                        st.markdown(f"""
-                        **Gefundene Textpassage** ({len(match.split())} Wörter):
-                        ```
-                        {match}
-                        ```
-                        """)
+                        words = len(match.split())
+                        # Berechne Höhe basierend auf Textlänge
+                        height = max(100, min(25 * (len(match) // 50 + 1), 400))
+                        st.markdown(f"**Gefundene Textpassage** ({words} Wörter):")
+                        st.text_area("", value=match, height=height, key=f"match_{source}_{match[:20]}")
                     st.markdown("---")
             else:
                 st.success("Keine verdächtigen Übereinstimmungen gefunden!")
