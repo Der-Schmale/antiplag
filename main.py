@@ -128,7 +128,7 @@ def main():
                         
                     for match in matches:
                         st.markdown(f"**Gefundene Textpassage** ({len(match)} Zeichen):")
-                        st.markdown(f"""<div style="background-color: white; padding: 10px; border: 1px solid #ccc; color: black; margin: 10px 0; font-family: monospace; white-space: pre-wrap;">
+                        st.markdown(f"""<div style="background-color: white; padding: 10px; border: 1px solid #ccc; color: black; margin: 10px 0; font-family: monospace; white-space: pre-wrap; text-align: left;">
                         {match}
                         </div>
                         """, unsafe_allow_html=True)
