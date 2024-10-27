@@ -6,18 +6,17 @@ import re
 from urllib.parse import urlparse
 
 def clean_text(text):
-    """Entfernt Zitate und bereinigt den Text gründlicher"""
+    """Bereinigt den Text minimal, um Übereinstimmungen besser zu finden"""
     if not text:
         return ""
     
     # Debug-Ausgabe des Originaltexts
     st.write("Original:", text[:200])
     
-    # 1. Entferne HTML und Navigation-ähnliche Elemente plus deren Umgebung
-    nav_pattern = r'(?:Home|News|Panorama|Kriminalität|Schlagzeilen|Alle|Zurück|Artikel\steilen\smit:|Lesen Sie mehr).*?(?=[A-Z])'
-    text = re.sub(nav_pattern, '', text)
+    # 1. Entferne Navigation und Metadaten am Anfang/Ende
+    text = re.sub(r'^(?:Home|News|Panorama|Kriminalität|Schlagzeilen|Alle|Zurück|Artikel\steilen\smit:).*?\n', '', text)
     
-    # 2. Entferne Zitate mit verschiedenen Anführungszeichen
+    # 2. Entferne Zitate
     quotes_patterns = [
         r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',
         r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',
@@ -28,32 +27,9 @@ def clean_text(text):
     for pattern in quotes_patterns:
         text = re.sub(pattern, '', text)
     
-    # 3. Entferne Klammern und deren Inhalt
-    text = re.sub(r'\([^)]*\)', '', text)
-    
-    # 4. Normalisiere spezielle Zeichen
-    text = text.replace('–', '-')  # Normalisiere verschiedene Bindestriche
-    
-    # 5. Entferne doppelte Vorkommen von Sätzen oder Phrasen
-    words = text.split()
-    unique_words = []
-    i = 0
-    while i < len(words):
-        if i + 5 <= len(words):  # Prüfe 5-Wort-Sequenzen
-            sequence = ' '.join(words[i:i+5])
-            if sequence not in ' '.join(unique_words):
-                unique_words.append(words[i])
-                i += 1
-            else:
-                i += 5
-        else:
-            unique_words.append(words[i])
-            i += 1
-    text = ' '.join(unique_words)
-    
-    # 6. Bereinige übrige Satzzeichen und normalisiere Whitespace
-    text = re.sub(r'[,:]', '', text)  # Entferne Kommas und Doppelpunkte
-    text = re.sub(r'\s+', ' ', text)  # Normalisiere Whitespace
+    # 3. Normalisiere nur grundlegende Sachen
+    text = text.replace('–', '-')
+    text = re.sub(r'\s+', ' ', text)
     text = text.strip()
     
     # Debug-Ausgabe des bereinigten Texts
@@ -99,6 +75,7 @@ def find_max_matching_sequences(text1, text2, min_words=5):
     st.write("Text2 (Quelle) Anfang:", text2[:200])
     
     words1 = text1.split()
+    words2 = text2.split()
     found_matches = {}
     
     i = 0
@@ -106,14 +83,17 @@ def find_max_matching_sequences(text1, text2, min_words=5):
         max_match_at_pos = None
         max_length_at_pos = 0
         
-        for length in range(min_words, len(words1) - i + 1):
-            sequence = ' '.join(words1[i:i + length])
-            if sequence in text2:
-                max_match_at_pos = sequence
-                max_length_at_pos = length
-            else:
-                break
-                
+        # Suche nach der längstmöglichen Übereinstimmung
+        current_sequence = []
+        for j in range(i, len(words1)):
+            current_sequence.append(words1[j])
+            current_text = ' '.join(current_sequence)
+            
+            # Prüfe ob die aktuelle Sequenz im Quelltext vorkommt
+            if current_text in text2 and len(current_sequence) >= min_words:
+                max_match_at_pos = current_text
+                max_length_at_pos = len(current_sequence)
+        
         if max_match_at_pos:
             found_matches[i] = (max_length_at_pos, max_match_at_pos)
             i += max_length_at_pos
