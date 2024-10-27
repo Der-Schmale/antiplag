@@ -35,7 +35,7 @@ def extract_with_trafilatura(url):
     except:
         return None
 
-def find_matching_strings(text1, text2, min_length=STRING_LENGTH):  # Hier verwenden wir die Variable
+def find_matching_strings(text1, text2, min_length=STRING_LENGTH):
     """Findet übereinstimmende Textpassagen mit Mindestlänge"""
     matches = []
     text_length = len(text1)
@@ -111,7 +111,7 @@ def main():
                     continue
                     
                 source_text = ' '.join(source_text.split())
-                matches = find_matching_strings(user_text, source_text)  # String_Length wird automatisch verwendet
+                matches = find_matching_strings(user_text, source_text)
                 
                 if matches:
                     source_label = url if url.strip() else "Manuell eingegebener Text"
@@ -128,7 +128,10 @@ def main():
                         
                     for match in matches:
                         st.markdown(f"**Gefundene Textpassage** ({len(match)} Zeichen):")
-                        st.text_area("", value=match, height=100, key=f"match_{match[:20]}", disabled=True)
+                        st.markdown(f"""<div style="background-color: white; padding: 10px; border: 1px solid #ccc; color: black; margin: 10px 0; font-family: monospace; white-space: pre-wrap;">
+                        {match}
+                        </div>
+                        """, unsafe_allow_html=True)
                     st.markdown("---")
             else:
                 st.success("Keine verdächtigen Übereinstimmungen gefunden!")
