@@ -5,6 +5,9 @@ import trafilatura
 import re
 from urllib.parse import urlparse
 
+# Mindestlänge für Übereinstimmungen (in Zeichen)
+STRING_LENGTH = 40
+
 def extract_with_requests(url):
     """Methode 1: Einfaches Scraping mit requests und BeautifulSoup"""
     try:
@@ -32,7 +35,7 @@ def extract_with_trafilatura(url):
     except:
         return None
 
-def find_matching_strings(text1, text2, min_length=20):
+def find_matching_strings(text1, text2, min_length=STRING_LENGTH):  # Hier verwenden wir die Variable
     """Findet übereinstimmende Textpassagen mit Mindestlänge"""
     matches = []
     text_length = len(text1)
@@ -108,7 +111,7 @@ def main():
                     continue
                     
                 source_text = ' '.join(source_text.split())
-                matches = find_matching_strings(user_text, source_text, min_length=20)
+                matches = find_matching_strings(user_text, source_text)  # String_Length wird automatisch verwendet
                 
                 if matches:
                     source_label = url if url.strip() else "Manuell eingegebener Text"
