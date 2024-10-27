@@ -7,10 +7,22 @@ from urllib.parse import urlparse
 
 def clean_text(text):
     """Entfernt Zitate (Text in Anführungszeichen) und bereinigt den Text"""
-    if not text:  # Überprüfe auf None oder leeren String
+    if not text:
         return ""
-    text = re.sub(r'["„"].*?[""]', '', text)
-    text = re.sub(r"['‚'].*?['']", '', text)
+        
+    # Entferne alle Arten von Anführungszeichen und deren Inhalt
+    patterns = [
+        r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',  # ", ", ", „
+        r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',    # ', ', ‚, ‛
+        r"'.*?'",                                                        # einfache Anführungszeichen
+        r"».*?«",                                                        # französische Anführungszeichen
+        r"›.*?‹"                                                         # einfache französische
+    ]
+    
+    for pattern in patterns:
+        text = re.sub(pattern, '', text)
+    
+    # Normalisiere Whitespace
     text = ' '.join(text.split())
     return text
 
@@ -39,7 +51,7 @@ def extract_with_trafilatura(url):
 
 def find_max_matching_sequences(text1, text2, min_words=5):
     """Findet die maximalen, nicht-überlappenden Sequenzen"""
-    if not text1 or not text2:  # Überprüfe auf leere Texte
+    if not text1 or not text2:
         return []
     
     words1 = text1.split()
@@ -70,55 +82,51 @@ def main():
     st.title("🔍 Plagiats-Checker")
     st.write("Überprüfen Sie Text auf mögliche nicht-zitierte Übernahmen aus Webseiten.")
     
-    # Container für URL-Eingaben und zugehörige Texte
-    st.subheader("Quell-Texte eingeben")
-    
-    # Dictionary für die gescrapten/eingegebenen Texte
     if 'source_texts' not in st.session_state:
         st.session_state.source_texts = [""] * 4
 
-    sources = []  # Liste für URLs und ihre Texte
+    sources = []
     
-    # Erstelle 4 Eingabeblöcke
+    st.subheader("Quell-Texte eingeben")
+    
+    # Layout für jede Quelle
     for i in range(4):
-        col1, col2 = st.columns([4, 1])
+        # Container für URL und Button
+        container = st.container()
+        col1, col2 = container.columns([4, 1])
         
         with col1:
             url = st.text_input(f"URL {i+1}", key=f"url_{i}")
         with col2:
-            if st.button("Scrapen", key=f"scrape_{i}") and url:
-                with st.spinner(f"Scrape URL {i+1}..."):
-                    content = extract_with_requests(url)
-                    if not content:
-                        content = extract_with_trafilatura(url)
-                    if content:
-                        st.session_state.source_texts[i] = content
-                        st.success("Text erfolgreich gescraped!")
-                    else:
-                        st.error("Konnte Text nicht extrahieren.")
+            if st.button("Einlesen", key=f"scrape_{i}", help="Text von der URL einlesen") and url:
+                content = extract_with_requests(url)
+                if not content:
+                    content = extract_with_trafilatura(url)
+                if content:
+                    st.session_state.source_texts[i] = content
+                else:
+                    st.error("Konnte Text nicht extrahieren.")
         
         # Textfeld für gescrapten/manuellen Text
         source_text = st.text_area(
-            f"Quelltext {i+1} (gescraped oder manuell eingeben)", 
+            f"Quelltext {i+1} (eingelesen oder manuell eingeben)", 
             value=st.session_state.source_texts[i],
             key=f"text_{i}",
             height=150
         )
         
-        # Speichere URL und Text wenn mindestens eins von beiden vorhanden
         if url.strip() or source_text.strip():
             sources.append((url, source_text))
         
         st.markdown("---")
     
-    # Texteingabe für zu prüfenden Text
     st.subheader("Zu überprüfenden Text eingeben")
     user_text = st.text_area("Ihr Text", height=200)
     
     if st.button("Auf Plagiate prüfen") and user_text and sources:
         with st.spinner("Überprüfe auf Plagiate..."):
             cleaned_user_text = clean_text(user_text)
-            all_matches = {}  # URL/Quelle -> [matches]
+            all_matches = {}
             
             for url, source_text in sources:
                 if not source_text.strip():
@@ -135,7 +143,6 @@ def main():
             
             if all_matches:
                 for source, matches in all_matches.items():
-                    # Erstelle klickbaren Link nur wenn es eine URL ist
                     if source.startswith('http'):
                         st.markdown(f"### Quelle: [{urlparse(source).netloc}]({source})")
                     else:
