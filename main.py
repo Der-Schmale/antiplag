@@ -6,22 +6,26 @@ import re
 from urllib.parse import urlparse
 
 def clean_text(text):
-    """Bereinigt den Text minimal, um Übereinstimmungen besser zu finden"""
+    """Bereinigt den Text gründlicher"""
     if not text:
         return ""
     
     # Debug-Ausgabe des Originaltexts
     st.write("Original:", text[:200])
     
-    # 1. Entferne Navigation und Metadaten
+    # 1. Entferne Zwischenüberschriften und Navigation
+    text = re.sub(r'([.!?])\s*[A-Z][^.!?]*[:?]\s*', r'\1 ', text)  # Entfernt Zwischenüberschriften
+    
+    # 2. Entferne Navigation und Metadaten
     nav_terms = [
         "Home", "News", "Panorama", "Kriminalität", "Schlagzeilen", 
-        "Alle", "Zurück", "Artikel teilen mit", "ZurückArtikel"
+        "Alle", "Zurück", "Artikel teilen mit", "ZurückArtikel",
+        "Lesen Sie mehr", "zum Thema"
     ]
     for term in nav_terms:
         text = text.replace(term, "")
     
-    # 2. Entferne Zitate
+    # 3. Entferne Zitate
     quotes_patterns = [
         r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',
         r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',
@@ -32,10 +36,20 @@ def clean_text(text):
     for pattern in quotes_patterns:
         text = re.sub(pattern, '', text)
     
-    # 3. Bereinige Satzzeichen und normalisiere Text
+    # 4. Normalisiere Satzzeichen und Whitespace
     text = text.replace('–', '-')                  # Normalisiere Bindestriche
+    text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)  # Füge Leerzeichen nach Satzzeichen ein
     text = re.sub(r'[,:]', ' ', text)             # Ersetze Kommas und Doppelpunkte durch Leerzeichen
     text = re.sub(r'\s+', ' ', text)              # Normalisiere Whitespace
+    
+    # 5. Entferne doppelte Sätze
+    sentences = text.split('. ')
+    unique_sentences = []
+    for sentence in sentences:
+        if sentence not in unique_sentences:
+            unique_sentences.append(sentence)
+    text = '. '.join(unique_sentences)
+    
     text = text.strip()
     
     # Debug-Ausgabe des bereinigten Texts
@@ -51,14 +65,28 @@ def extract_with_requests(url):
         soup = BeautifulSoup(response.text, 'html.parser')
         
         # Entferne mehr unwichtige Elemente
-        for element in soup(['script', 'style', 'nav', 'header', 'footer', 'meta', 'link']):
+        unwanted_tags = [
+            'script', 'style', 'nav', 'header', 'footer', 'meta', 'link',
+            'aside', 'iframe', 'form', 'noscript', 'figure', 'figcaption',
+            'time', 'button', 'input'
+        ]
+        
+        for tag in unwanted_tags:
+            for element in soup.find_all(tag):
+                element.decompose()
+        
+        # Entferne Elemente mit bestimmten Klassen/IDs
+        for element in soup.find_all(class_=re.compile(r'nav|header|footer|menu|sidebar|comment|meta|share|social|ad|banner|copyright')):
             element.decompose()
             
-        # Entferne Navigation und Metadaten
-        for element in soup.find_all(['nav', 'header', 'footer']):
-            element.decompose()
+        # Extrahiere hauptsächlich den Artikeltext
+        article = soup.find('article') or soup.find(class_=re.compile(r'article|post|content|main'))
+        if article:
+            text = article.get_text()
+        else:
+            text = soup.get_text()
             
-        return ' '.join(soup.get_text().split())
+        return ' '.join(text.split())
     except:
         return None
 
