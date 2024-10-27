@@ -10,7 +10,6 @@ def clean_text(text):
     if not text:
         return ""
     
-    
     # 1. Entferne Zwischenüberschriften und Navigation
     text = re.sub(r'([.!?])\s*[A-Z][^.!?]*[:?]\s*', r'\1 ', text)  # Entfernt Zwischenüberschriften
     
@@ -49,7 +48,7 @@ def clean_text(text):
     text = '. '.join(unique_sentences)
     
     text = text.strip()
-     
+    
     return text
 
 def extract_with_requests(url):
@@ -90,10 +89,6 @@ def find_max_matching_sequences(text1, text2, min_words=5):
     """Findet alle relevanten übereinstimmenden Sequenzen"""
     if not text1 or not text2:
         return []
-    
-    # Debug: Zeige die ersten 200 Zeichen beider Texte
-    st.write("Text1 (User) Anfang:", text1[:200])
-    st.write("Text2 (Quelle) Anfang:", text2[:200])
     
     words1 = text1.split()
     matches = []
