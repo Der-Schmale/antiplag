@@ -203,7 +203,7 @@ def main():
                         
                     for match in matches:
                         st.markdown(f"**Gefundene Textpassage** ({len(match.split())} Wörter):")
-                        st.text_area("", value=match, height=200, key=f"match_{match[:20]}", disabled=True)
+                        st.text_area("", value=match, height=100, key=f"match_{match[:20]}", disabled=True)
                     st.markdown("---")
             else:
                 st.success("Keine verdächtigen Übereinstimmungen gefunden!")
