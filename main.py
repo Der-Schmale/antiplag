@@ -42,14 +42,6 @@ def clean_text(text):
     text = re.sub(r'[,:]', ' ', text)             # Ersetze Kommas und Doppelpunkte durch Leerzeichen
     text = re.sub(r'\s+', ' ', text)              # Normalisiere Whitespace
     
-    # 5. Entferne doppelte Sätze
-    sentences = text.split('. ')
-    unique_sentences = []
-    for sentence in sentences:
-        if sentence not in unique_sentences:
-            unique_sentences.append(sentence)
-    text = '. '.join(unique_sentences)
-    
     text = text.strip()
     
     # Debug-Ausgabe des bereinigten Texts
@@ -135,6 +127,15 @@ def main():
     st.title("🔍 Plagiats-Checker")
     st.write("Überprüfen Sie Text auf mögliche nicht-zitierte Übernahmen aus Webseiten.")
     
+    # CSS für vertikale Ausrichtung
+    st.markdown("""
+        <style>
+        .stButton > button {
+            margin-top: 24px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
     if 'source_texts' not in st.session_state:
         st.session_state.source_texts = [""] * 4
 
@@ -146,7 +147,6 @@ def main():
     for i in range(4):
         col1, col2 = st.columns([5, 1])
         
-        # URL und Button nebeneinander in den Columns
         with col1:
             url = st.text_input(f"URL {i+1}", key=f"url_{i}")
         with col2:
