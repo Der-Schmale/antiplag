@@ -37,10 +37,10 @@ def clean_text(text):
     #    text = re.sub(pattern, '', text)
     
     # 4. Normalisiere Satzzeichen und Whitespace
-    text = text.replace('–', '-')                  # Normalisiere Bindestriche
-    text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)  # Füge Leerzeichen nach Satzzeichen ein
-    text = re.sub(r'[,:]', ' ', text)             # Ersetze Kommas und Doppelpunkte durch Leerzeichen
-    text = re.sub(r'\s+', ' ', text)              # Normalisiere Whitespace
+    #text = text.replace('–', '-')                  # Normalisiere Bindestriche
+    #text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)  # Füge Leerzeichen nach Satzzeichen ein
+    #text = re.sub(r'[,:]', ' ', text)             # Ersetze Kommas und Doppelpunkte durch Leerzeichen
+    #text = re.sub(r'\s+', ' ', text)              # Normalisiere Whitespace
     
     # 5. Entferne doppelte Sätze
     sentences = text.split('. ')
