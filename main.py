@@ -26,15 +26,15 @@ def clean_text(text):
         text = text.replace(term, "")
     
     # 3. Entferne Zitate
-    quotes_patterns = [
-        r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',
-        r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',
-        r"'.*?'",
-        r"».*?«",
-        r"›.*?‹"
-    ]
-    for pattern in quotes_patterns:
-        text = re.sub(pattern, '', text)
+    #quotes_patterns = [
+    #    r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',
+    #    r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',
+    #    r"'.*?'",
+    #    r"».*?«",
+    #    r"›.*?‹"
+    #]
+    #for pattern in quotes_patterns:
+    #    text = re.sub(pattern, '', text)
     
     # 4. Normalisiere Satzzeichen und Whitespace
     text = text.replace('–', '-')                  # Normalisiere Bindestriche
