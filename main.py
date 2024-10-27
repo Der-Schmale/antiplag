@@ -104,7 +104,7 @@ def main():
         
         # Textfeld für gescrapten/manuellen Text
         source_text = st.text_area(
-            f"Quelltext {i+1} (eingelesen oder manuell eingeben)", 
+            f"Quelltext {i+1} (eingelesen oder manuell eingegeben)", 
             value=st.session_state.source_texts[i],
             key=f"text_{i}",
             height=150
