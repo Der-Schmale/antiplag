@@ -64,30 +64,22 @@ def extract_with_requests(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Entferne mehr unwichtige Elemente
-        unwanted_tags = [
-            'script', 'style', 'nav', 'header', 'footer', 'meta', 'link',
-            'aside', 'iframe', 'form', 'noscript', 'figure', 'figcaption',
-            'time', 'button', 'input'
-        ]
-        
-        for tag in unwanted_tags:
-            for element in soup.find_all(tag):
-                element.decompose()
-        
-        # Entferne Elemente mit bestimmten Klassen/IDs
-        for element in soup.find_all(class_=re.compile(r'nav|header|footer|menu|sidebar|comment|meta|share|social|ad|banner|copyright')):
+        # Entferne nur die wichtigsten unwichtigen Elemente
+        for element in soup(['script', 'style', 'nav', 'header', 'footer']):
             element.decompose()
             
-        # Extrahiere hauptsächlich den Artikeltext
+        # Versuche den Hauptinhalt zu finden
         article = soup.find('article') or soup.find(class_=re.compile(r'article|post|content|main'))
         if article:
             text = article.get_text()
         else:
             text = soup.get_text()
-            
-        return ' '.join(text.split())
-    except:
+        
+        # Normalisiere Whitespace
+        text = ' '.join(text.split())
+        return text
+    except Exception as e:
+        print(f"Fehler beim Scraping: {e}")  # Für Debug-Zwecke
         return None
 
 def extract_with_trafilatura(url):
