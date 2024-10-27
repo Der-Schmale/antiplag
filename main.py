@@ -10,8 +10,6 @@ def clean_text(text):
     if not text:
         return ""
     
-    # Debug-Ausgabe des Originaltexts
-    st.write("Original:", text[:200])
     
     # 1. Entferne Zwischenüberschriften und Navigation
     text = re.sub(r'([.!?])\s*[A-Z][^.!?]*[:?]\s*', r'\1 ', text)  # Entfernt Zwischenüberschriften
@@ -51,10 +49,7 @@ def clean_text(text):
     text = '. '.join(unique_sentences)
     
     text = text.strip()
-    
-    # Debug-Ausgabe des bereinigten Texts
-    st.write("Bereinigt:", text[:200])
-    
+     
     return text
 
 def extract_with_requests(url):
