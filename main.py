@@ -10,11 +10,8 @@ def clean_text(text):
     if not text:
         return ""
     
-    # Debug-Ausgabe des Originaltexts
-    st.write("Original:", text[:200])
-    
     # 1. Entferne Zwischenüberschriften und Navigation
-    text = re.sub(r'([.!?])\s*[A-Z][^.!?]*[:?]\s*', r'\1 ', text)  # Entfernt Zwischenüberschriften
+    text = re.sub(r'([.!?])\s*[A-Z][^.!?]*[:?]\s*', r'\1 ', text)
     
     # 2. Entferne Navigation und Metadaten
     nav_terms = [
@@ -37,15 +34,11 @@ def clean_text(text):
         text = re.sub(pattern, '', text)
     
     # 4. Normalisiere Satzzeichen und Whitespace
-    text = text.replace('–', '-')                  # Normalisiere Bindestriche
-    text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)  # Füge Leerzeichen nach Satzzeichen ein
-    text = re.sub(r'[,:]', ' ', text)             # Ersetze Kommas und Doppelpunkte durch Leerzeichen
-    text = re.sub(r'\s+', ' ', text)              # Normalisiere Whitespace
-    
+    text = text.replace('–', '-')
+    text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)
+    text = re.sub(r'[,:]', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
     text = text.strip()
-    
-    # Debug-Ausgabe des bereinigten Texts
-    st.write("Bereinigt:", text[:200])
     
     return text
 
@@ -71,7 +64,7 @@ def extract_with_requests(url):
         text = ' '.join(text.split())
         return text
     except Exception as e:
-        print(f"Fehler beim Scraping: {e}")  # Für Debug-Zwecke
+        print(f"Fehler beim Scraping: {e}")
         return None
 
 def extract_with_trafilatura(url):
@@ -87,10 +80,6 @@ def find_max_matching_sequences(text1, text2, min_words=5):
     """Findet alle relevanten übereinstimmenden Sequenzen"""
     if not text1 or not text2:
         return []
-    
-    # Debug: Zeige die ersten 200 Zeichen beider Texte
-    st.write("Text1 (User) Anfang:", text1[:200])
-    st.write("Text2 (Quelle) Anfang:", text2[:200])
     
     words1 = text1.split()
     matches = []
@@ -127,21 +116,6 @@ def main():
     st.title("🔍 Plagiats-Checker")
     st.write("Überprüfen Sie Text auf mögliche nicht-zitierte Übernahmen aus Webseiten.")
     
-    # Flexbox CSS für zuverlässige vertikale Ausrichtung
-    st.markdown("""
-        <style>
-        div.row-widget.stButton {
-            display: flex;
-            align-items: center;
-            min-height: 38px;  /* Standardhöhe der Streamlit-Eingabefelder */
-        }
-        .stButton > button {
-            margin: 0;
-            height: 38px;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
     if 'source_texts' not in st.session_state:
         st.session_state.source_texts = [""] * 4
 
@@ -151,12 +125,12 @@ def main():
     
     # Layout für jede Quelle
     for i in range(4):
-        col1, col2 = st.columns([5, 1])
+        col1, col2 = st.columns([4, 1])
         
         with col1:
             url = st.text_input(f"URL {i+1}", key=f"url_{i}")
         with col2:
-            if st.button("Einlesen", key=f"scrape_{i}", help="Text von der URL einlesen", use_container_width=True) and url:
+            if st.button("Einlesen", key=f"scrape_{i}", help="Text von der URL einlesen") and url:
                 content = extract_with_requests(url)
                 if not content:
                     content = extract_with_trafilatura(url)
