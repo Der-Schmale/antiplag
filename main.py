@@ -202,12 +202,8 @@ def main():
                         st.markdown(f"### Quelle: {source}")
                         
                     for match in matches:
-                        st.markdown(f"""
-                        **Gefundene Textpassage** ({len(match.split())} Wörter):
-                        ```
-                        {match}
-                        ```
-                        """)
+                        st.markdown(f"**Gefundene Textpassage** ({len(match.split())} Wörter):")
+                        st.text_area("", value=match, height=300, key=f"match_{match[:20]}", disabled=True)
                     st.markdown("---")
             else:
                 st.success("Keine verdächtigen Übereinstimmungen gefunden!")
