@@ -59,7 +59,7 @@ def find_matching_strings(text1, text2, min_length=STRING_LENGTH):
 
 def main():
     st.title("🔍 Plagiats-Checker")
-    st.write("Überprüfen Sie Text auf mögliche nicht-zitierte Übernahmen aus Webseiten.")
+    st.write("Überprüfe deinen Artikel auf unbeabsichtigte Übernahmen aus Quellen.")
     
     # CSS für die Formatierung der Ausgabe
     st.markdown("""
