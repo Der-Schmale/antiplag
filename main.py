@@ -13,28 +13,48 @@ def clean_text(text):
     # Debug-Ausgabe des Originaltexts
     st.write("Original:", text[:200])
     
-    # 1. Entferne erst HTML und Navigation-ähnliche Elemente
-    text = re.sub(r'(?:Home|News|Panorama|Kriminalität|Schlagzeilen|Alle|Zurück|Artikel\steilen\smit:).*?(?=\s|$)', '', text)
+    # 1. Entferne HTML und Navigation-ähnliche Elemente plus deren Umgebung
+    nav_pattern = r'(?:Home|News|Panorama|Kriminalität|Schlagzeilen|Alle|Zurück|Artikel\steilen\smit:|Lesen Sie mehr).*?(?=[A-Z])'
+    text = re.sub(nav_pattern, '', text)
     
     # 2. Entferne Zitate mit verschiedenen Anführungszeichen
-    patterns = [
+    quotes_patterns = [
         r'["\u201C\u201D\u201E\u201F].*?["\u201C\u201D\u201E\u201F]',
         r'[\u2018\u2019\u201A\u201B].*?[\u2018\u2019\u201A\u201B]',
         r"'.*?'",
         r"».*?«",
         r"›.*?‹"
     ]
-    
-    for pattern in patterns:
+    for pattern in quotes_patterns:
         text = re.sub(pattern, '', text)
     
-    # 3. Bereinige übrige Satzzeichen und normalisiere Whitespace
-    text = re.sub(r'[,:](?=\s|$)', '', text)  # Entferne Kommas und Doppelpunkte am Wortende
+    # 3. Entferne Klammern und deren Inhalt
+    text = re.sub(r'\([^)]*\)', '', text)
+    
+    # 4. Normalisiere spezielle Zeichen
+    text = text.replace('–', '-')  # Normalisiere verschiedene Bindestriche
+    
+    # 5. Entferne doppelte Vorkommen von Sätzen oder Phrasen
+    words = text.split()
+    unique_words = []
+    i = 0
+    while i < len(words):
+        if i + 5 <= len(words):  # Prüfe 5-Wort-Sequenzen
+            sequence = ' '.join(words[i:i+5])
+            if sequence not in ' '.join(unique_words):
+                unique_words.append(words[i])
+                i += 1
+            else:
+                i += 5
+        else:
+            unique_words.append(words[i])
+            i += 1
+    text = ' '.join(unique_words)
+    
+    # 6. Bereinige übrige Satzzeichen und normalisiere Whitespace
+    text = re.sub(r'[,:]', '', text)  # Entferne Kommas und Doppelpunkte
     text = re.sub(r'\s+', ' ', text)  # Normalisiere Whitespace
     text = text.strip()
-    
-    # 4. Entferne leere Klammern und deren Inhalt
-    text = re.sub(r'\([^)]*\)', '', text)
     
     # Debug-Ausgabe des bereinigten Texts
     st.write("Bereinigt:", text[:200])
