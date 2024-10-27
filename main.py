@@ -61,6 +61,24 @@ def main():
     st.title("🔍 Plagiats-Checker")
     st.write("Überprüfen Sie Text auf mögliche nicht-zitierte Übernahmen aus Webseiten.")
     
+    # CSS für die Formatierung der Ausgabe
+    st.markdown("""
+        <style>
+        .match-text {
+            text-align: left !important;
+            padding: 10px;
+            background-color: white;
+            color: black;
+            border: 1px solid #ccc;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            display: block;
+            width: 100%;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
     if 'source_texts' not in st.session_state:
         st.session_state.source_texts = [""] * 4
 
@@ -128,10 +146,9 @@ def main():
                         
                     for match in matches:
                         st.markdown(f"**Gefundene Textpassage** ({len(match)} Zeichen):")
-                        st.markdown(f"""<div style="background-color: white; padding: 10px; border: 1px solid #ccc; color: black; margin: 10px 0; font-family: monospace; white-space: pre-wrap; text-align: left;">
-                        {match}
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.markdown(f"""<div class="match-text">
+{match}
+</div>""", unsafe_allow_html=True)
                     st.markdown("---")
             else:
                 st.success("Keine verdächtigen Übereinstimmungen gefunden!")
